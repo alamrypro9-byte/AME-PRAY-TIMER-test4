@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>شاشة إقامة الصلاة - موقع الويب (نسخة الاختبار)</title>
+    <style>
+        /* شاشة سوداء تماماً وخالصة */
+        body, html { 
+            background-color: #000000; 
+            margin: 0; 
+            padding: 0;
+            height: 100vh; 
+            overflow: hidden; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        
+        #content-container {
+            display: flex; 
+            background-color: #000000;
+            width: 100vw;
+            height: 100vh;
+            color: #ffffff; 
+        }
+
+        .overlay {
+            width: 100%; height: 100%;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center;
+            text-align: center;
+            padding-bottom: 12vh; /* مساحة الأمان لرفع المحتوى ومنع تداخله مع الأسفل */
+        }
+
+        /* تنسيق أيقونة المسجد الكبرى (4 مآذن و 5 قباب) */
+        .mosque-icon {
+            width: 18vw; 
+            max-width: 240px;
+            margin-bottom: 20px;
+            opacity: 0.95;
+        }
+        
+        .clock { font-size: 7vw; font-weight: bold; color: #ffffff; margin-bottom: 5px; direction: ltr; }
+        .date-info { font-size: 1.8vw; color: #ffffff; margin-bottom: 20px; line-height: 1.5; }
+        
+        .times-container {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 15px;
+        }
+        
+        .time-box {
+            background: rgba(255,255,255,0.1); 
+            padding: 15px 30px; 
+            border-radius: 10px; 
+            border: 1px solid #ffffff;
+            text-align: center;
+        }
+        .time-box .ar { font-size: 2.2vw; color: #ffffff; font-weight: bold; }
+        .time-box .en { font-size: 1.5vw; color: #ffffff; direction: ltr; margin-top: 8px; }
+        
+        .prayer-info { margin: 5px 0; color: #ffffff; }
+        .prayer-info .ar { font-size: 3vw; font-weight: bold; }
+        .prayer-info .en { font-size: 2vw; direction: ltr; margin-top: 5px; }
+        
+        .iqamah-timer { 
+            margin: 5px 0 12vh 0; /* إبقاء العداد والرسالة مرفوعين للأعلى */
+            min-height: 12vw; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+        }
+        
+        .timer-display { 
+            color: #ffff00; /* اللون الأصفر */
+            font-weight: bold; 
+            transition: all 0.3s ease;
+            line-height: 1.2;
+        }
+
+        .footer { 
+            font-size: 1.2vw; 
+            color: #666; 
+            position: absolute; 
+            bottom: 20px; 
+            width: 100%; 
+            text-align: center; 
+            line-height: 1.6;
+            background-color: #000000; 
+            padding: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="content-container">
+        <div class="overlay">
+            
+            <!-- تصميم المسجد الكبير (4 مآذن، 5 قباب متدرجة، وأبواب) -->
+            <svg class="mosque-icon" viewBox="0 0 140 110" xmlns="http://www.w3.org/2000/svg">
+                <g fill="#ffffff">
+                    <!-- قاعدة المسجد -->
+                    <rect x="5" y="90" width="130" height="12" rx="2" />
+                    <rect x="15" y="80" width="110" height="10" />
+
+                    <!-- المآذن الخلفية (الداخلية) -->
+                    <!-- المئذنة اليسرى الداخلية -->
+                    <rect x="25" y="30" width="6" height="50" rx="1" />
+                    <rect x="23" y="45" width="10" height="2" rx="1" />
+                    <polygon points="25,30 31,30 28,15" />
+                    <rect x="27.5" y="8" width="1" height="7" />
+                    <path d="M 28 4 A 2.5 2.5 0 1 1 25.5 6.5 A 3 3 0 1 0 28 4 Z" />
+                    
+                    <!-- المئذنة اليمنى الداخلية -->
+                    <rect x="109" y="30" width="6" height="50" rx="1" />
+                    <rect x="107" y="45" width="10" height="2" rx="1" />
+                    <polygon points="109,30 115,30 112,15" />
+                    <rect x="111.5" y="8" width="1" height="7" />
+                    <path d="M 112 4 A 2.5 2.5 0 1 1 109.5 6.5 A 3 3 0 1 0 112 4 Z" />
+
+                    <!-- القباب -->
+                    <!-- قبة جانبية يسرى (صغرى) -->
+                    <path d="M 15 80 C 15 65, 35 65, 35 80 Z" />
+                    <rect x="24.5" y="57" width="1" height="8" />
+                    <path d="M 25 51 A 3 3 0 1 1 22 54 A 4 4 0 1 0 25 51 Z" />
+                    
+                    <!-- قبة جانبية يمنى (صغرى) -->
+                    <path d="M 105 80 C 105 65, 125 65, 125 80 Z" />
+                    <rect x="114.5" y="57" width="1" height="8" />
+                    <path d="M 115 51 A 3 3 0 1 1 112 54 A 4 4 0 1 0 115 51 Z" />
+                    
+                    <!-- قبة جانبية يسرى (وسطى) -->
+                    <path d="M 30 80 C 30 55, 55 55, 55 80 Z" />
+                    <rect x="42.5" y="47" width="1" height="8" />
+                    <path d="M 43 41 A 3 3 0 1 1 40 44 A 4 4 0 1 0 43 41 Z" />
+                    
+                    <!-- قبة جانبية يمنى (وسطى) -->
+                    <path d="M 85 80 C 85 55, 110 55, 110 80 Z" />
+                    <rect x="96.5" y="47" width="1" height="8" />
+                    <path d="M 97 41 A 3 3 0 1 1 94 44 A 4 4 0 1 0 97 41 Z" />
+
+                    <!-- القبة الرئيسية الكبرى (في المنتصف) -->
+                    <path d="M 45 80 C 45 40, 95 40, 95 80 Z" />
+                    <rect x="69" y="30" width="2" height="15" />
+                    <path d="M 70 22 A 5 5 0 1 1 65 27 A 6 6 0 1 0 70 22 Z" />
+
+                    <!-- المآذن الأمامية (الخارجية) -->
+                    <!-- المئذنة اليسرى الخارجية -->
+                    <rect x="5" y="45" width="6" height="45" rx="1" />
+                    <rect x="3" y="60" width="10" height="2" rx="1" />
+                    <polygon points="5,45 11,45 8,30" />
+                    <rect x="7.5" y="23" width="1" height="7" />
+                    <path d="M 8 19 A 2.5 2.5 0 1 1 5.5 21.5 A 3 3 0 1 0 8 19 Z" />
+
+                    <!-- المئذنة اليمنى الخارجية -->
+                    <rect x="129" y="45" width="6" height="45" rx="1" />
+                    <rect x="127" y="60" width="10" height="2" rx="1" />
+                    <polygon points="129,45 135,45 132,30" />
+                    <rect x="131.5" y="23" width="1" height="7" />
+                    <path d="M 132 19 A 2.5 2.5 0 1 1 129.5 21.5 A 3 3 0 1 0 132 19 Z" />
+
+                    <!-- أبواب المسجد (مفرغة بالأسود) -->
+                    <path d="M 62 102 L 62 90 A 8 8 0 0 1 78 90 L 78 102 Z" fill="#000000" />
+                    <path d="M 37.5 102 L 37.5 93 A 5 5 0 0 1 47.5 93 L 47.5 102 Z" fill="#000000" />
+                    <path d="M 92.5 102 L 92.5 93 A 5 5 0 0 1 102.5 93 L 102.5 102 Z" fill="#000000" />
+                </g>
+            </svg>
+
+            <div class="clock" id="current-time">00:00:00</div>
+            <div class="date-info">
+                <div id="date-ar">جاري التحضير...</div>
+                <div id="date-en" dir="ltr">Loading...</div>
+            </div>
+            
+            <div class="times-container">
+                <div class="time-box">
+                    <div class="ar" id="adhan-time-ar">وقت الأذان: --:--</div>
+                    <div class="en" id="adhan-time-en">Adhan Time: --:--</div>
+                </div>
+                <div class="time-box">
+                    <div class="ar" id="iqamah-time-ar">وقت الإقامة: --:--</div>
+                    <div class="en" id="iqamah-time-en">Iqamah Time: --:--</div>
+                </div>
+            </div>
+            
+            <div class="prayer-info">
+                <div class="ar" id="prayer-info-ar"></div>
+                <div class="en" id="prayer-info-en"></div>
+            </div>
+            
+            <div class="iqamah-timer">
+                <div class="timer-display" id="dynamic-display"></div>
+            </div>
+            
+            <div class="footer">
+                الموقع: جبل علي، دبي (نسخة تجريبية للموقع) | تحديث المواقيت يتم تلقائياً<br>
+                <span dir="ltr">Location: Jebel Ali, Dubai (Web Test Mode) | Timings updated automatically</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let schedule = [];
+        let currentlyDisplayedPrayer = "";
+        const prayerNamesEn = { 'الظهر': 'Dhuhr', 'العصر': 'Asr' };
+
+        function formatTime12(dateObj) {
+            return dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+
+        async function fetchPrayerTimes() {
+            let timings;
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const date = now.getDate();
+
+            try {
+                const response = await fetch('https://api.aladhan.com/v1/timingsByAddress?address=Jebel+Ali,+Dubai,+UAE&method=8');
+                const data = await response.json();
+                timings = data.data.timings;
+                
+                document.getElementById('date-ar').innerText = data.data.date.hijri.weekday.ar + " | " + data.data.date.hijri.day + " " + data.data.date.hijri.month.ar + " " + data.data.date.hijri.year;
+                document.getElementById('date-en').innerText = data.data.date.gregorian.weekday.en + " | " + data.data.date.gregorian.day + " " + data.data.date.gregorian.month.en + " " + data.data.date.gregorian.year;
+
+            } catch (error) {
+                console.log("No internet. Using Offline Mode.");
+                timings = { Dhuhr: "12:15", Asr: "15:35" }; 
+                
+                const optionsEn = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('date-ar').innerText = "التاريخ المحلي (بدون إنترنت)";
+                document.getElementById('date-en').innerText = now.toLocaleDateString('en-US', optionsEn);
+            }
+
+            function parseTime(timeStr) {
+                const [h, m] = timeStr.split(':');
+                return new Date(year, month, date, parseInt(h), parseInt(m), 0);
+            }
+
+            schedule = [
+                { name: 'الظهر', adhan: parseTime(timings.Dhuhr), iqamah: new Date(year, month, date, 13, 0, 0) }, 
+                { name: 'العصر', adhan: parseTime(timings.Asr), iqamah: new Date(year, month, date, 16, 30, 0) },
+                { name: 'الظهر', adhan: new Date(parseTime(timings.Dhuhr).getTime() + 86400000), iqamah: new Date(year, month, date + 1, 13, 0, 0) }, 
+                { name: 'العصر', adhan: new Date(parseTime(timings.Asr).getTime() + 86400000), iqamah: new Date(year, month, date + 1, 16, 30, 0) }
+            ];
+            
+            updateScreen();
+        }
+
+        function updateScreen() {
+            const now = new Date();
+            document.getElementById('current-time').innerText = now.toLocaleTimeString('en-US', { hour12: true });
+
+            if (schedule.length === 0) return;
+
+            let activePrayer = schedule[0];
+            let currentState = 'COUNTDOWN'; 
+
+            for (let prayer of schedule) {
+                const hideTime = new Date(prayer.iqamah.getTime() + (10 * 60000));
+                if (now < hideTime) {
+                    activePrayer = prayer;
+                    currentState = (now < prayer.iqamah) ? 'COUNTDOWN' : 'PRAYING';
+                    break;
+                }
+            }
+            
+            if (currentlyDisplayedPrayer !== activePrayer.name) {
+                const adhanStr = formatTime12(activePrayer.adhan);
+                const iqamahStr = formatTime12(activePrayer.iqamah);
+                const prayerNameEn = prayerNamesEn[activePrayer.name];
+
+                document.getElementById('adhan-time-ar').innerHTML = `وقت أذان ${activePrayer.name}: &nbsp; <span dir="ltr">${adhanStr}</span>`;
+                document.getElementById('adhan-time-en').innerHTML = `${prayerNameEn} Adhan: &nbsp; ${adhanStr}`;
+                
+                document.getElementById('iqamah-time-ar').innerHTML = `وقت إقامة ${activePrayer.name}: &nbsp; <span dir="ltr">${iqamahStr}</span>`;
+                document.getElementById('iqamah-time-en').innerHTML = `${prayerNameEn} Iqamah: &nbsp; ${iqamahStr}`;
+
+                currentlyDisplayedPrayer = activePrayer.name;
+            }
+
+            const infoArEl = document.getElementById('prayer-info-ar');
+            const infoEnEl = document.getElementById('prayer-info-en');
+            const dynamicDisplayEl = document.getElementById('dynamic-display');
+
+            if (currentState === 'COUNTDOWN') {
+                infoArEl.innerText = `الإقامة لصلاة ${activePrayer.name} بعد:`;
+                infoEnEl.innerText = `Iqamah for ${prayerNamesEn[activePrayer.name]} prayer in:`;
+
+                const diff = activePrayer.iqamah - now;
+                const hours = Math.floor(diff / (1000 * 60 * 60)); 
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                const timerFormatted = `${hours > 0 ? String(hours).padStart(2, '0') + ':' : ''}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                
+                dynamicDisplayEl.style.fontSize = '9vw'; 
+                dynamicDisplayEl.style.direction = 'ltr';
+                dynamicDisplayEl.innerHTML = timerFormatted;
+                
+            } 
+            else if (currentState === 'PRAYING') {
+                infoArEl.innerText = `تقام صلاة ${activePrayer.name} الآن`;
+                infoEnEl.innerText = `${prayerNamesEn[activePrayer.name]} prayer is in progress`;
+                
+                dynamicDisplayEl.style.fontSize = '4.5vw';
+                dynamicDisplayEl.style.direction = 'rtl';
+                dynamicDisplayEl.innerHTML = `أقيموا الصفوف وأطفئوا الهواتف<br><span style="font-size: 2.5vw; color: #ffff00;" dir="ltr">Straighten the rows and turn off your phones</span>`;
+            }
+        }
+
+        fetchPrayerTimes();
+        setInterval(fetchPrayerTimes, 6 * 60 * 60 * 1000); 
+        setInterval(updateScreen, 1000);
+        
+    </script>
+</body>
+</html>
